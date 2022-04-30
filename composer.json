@@ -1,0 +1,23 @@
+{
+    "name": "michaelruther95/laravel-file-handler",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Michaelruther95\\LaravelFileHandler\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Michael Ruther Batoon"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {},
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Michaelruther95\\LaravelFileHandler\\MainServiceProvider"
+            ]
+        }
+    }
+}
