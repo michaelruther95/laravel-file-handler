@@ -5,6 +5,8 @@ namespace Michaelruther95\LaravelFileHandler\Services;
 use Michaelruther95\LaravelFileHandler\Services\S3Service;
 use Michaelruther95\LaravelFileHandler\Models\FileHandlerFile as FileMedia;
 use Michaelruther95\LaravelFileHandler\Models\FileHandlerS3Upload as S3Upload;
+use Michaelruther95\LaravelFileHandler\Models\FileHandlerMediaUsage as MediaUsage;
+use Illuminate\Support\Facades\Schema;
 
 class MediaService {
 
@@ -86,7 +88,7 @@ class MediaService {
             }
         }
 
-        $media = FileMedia::with('s3Media')
+        $media = FileMedia::with('s3Media', 'usages')
             ->where($type, $id)
             ->first();
 
@@ -132,8 +134,77 @@ class MediaService {
         }
     }
 
-    public static function list () {
-        
+    public static function list ($populationPerPage = 10) {
+        $medias = FileMedia::paginate($populationPerPage);
+
+        return $medias;
+    }
+
+    public static function setusage ($mediaID, $table, $tableColumn) {
+
+        if (!Schema::hasTable($table)) {
+            return [
+                'success' => false,
+                'error' => [
+                    'code' => 'table_not_found',
+                    'title' => 'Table Not Found',
+                    'message' => 'The table you are trying to relate your media does not exist.'
+                ]
+            ];
+        }
+
+        if (!Schema::hasColumn($table, $tableColumn)) {
+            return [
+                'success' => false,
+                'error' => [
+                    'code' => 'table_column_not_found',
+                    'title' => 'Table Column Not Found',
+                    'message' => 'The table column you are trying to relate your media does not exist.'
+                ]
+            ];
+        }
+
+        $media = FileMedia::where('id', $mediaID)
+            ->first();
+
+        if (!$media) {
+            return [
+                'success' => false,
+                'error' => [
+                    'code' => 'media_not_found',
+                    'title' => 'Media Not Found',
+                    'message' => 'The media you are trying to access could not be found'
+                ]
+            ];
+        }
+
+        $checker = MediaUsage::where('media_id', $mediaID)
+            ->where('table_used_on', $table)
+            ->where('table_column_used_on', $tableColumn)
+            ->first();
+
+        if ($checker) {
+            return [
+                'success' => false,
+                'error' => [
+                    'code' => 'usage_already_exist',
+                    'title' => 'The Usage Already Exist',
+                    'message' => 'The media usage you are saving already exists on the record.'
+                ]
+            ];
+        }
+
+        $usage = new MediaUsage();
+        $usage->media_id = $mediaID;
+        $usage->table_used_on = $table;
+        $usage->table_column_used_on = $tableColumn;
+        $usage->save();
+
+        return [
+            'success' => true,
+            'data' => $usage
+        ];
+
     }
 
 }

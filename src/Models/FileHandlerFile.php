@@ -12,4 +12,8 @@ class FileHandlerFile extends Model
     public function s3Media () {
         return $this->hasOne(\Michaelruther95\LaravelFileHandler\Models\FileHandlerS3Upload::class, 'id');
     }
+
+    public function usages () {
+        return $this->hasMany(\Michaelruther95\LaravelFileHandler\Models\FileHandlerMediaUsage::class, 'media_id');
+    }
 }
